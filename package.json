@@ -1,0 +1,23 @@
+{
+  "name": "chrome-power-tools",
+  "version": "1.0.0",
+  "description": "This is a chrome extension which extends chrome core features to help every buddy using chrome for productivity.",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config webpack/webpack.config.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chrome": "^0.0.225",
+    "assert": "^2.0.0",
+    "console-browserify": "^1.2.0",
+    "copy-webpack-plugin": "^11.0.0",
+    "process": "^0.11.10",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.2",
+    "webpack": "^5.76.3",
+    "webpack-cli": "^5.0.1"
+  }
+}
