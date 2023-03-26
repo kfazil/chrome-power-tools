@@ -1,13 +1,17 @@
-console.log("I'm content script");
-
 var inputBox: null | HTMLInputElement;
 var completeValue: string;
 var selectedValue: string;
 var startPos: null | number;
 var endPos: null | number;
+var textToUpdate: string;
+
+const copyToClipboard = async(text: string) => {
+  if (navigator && navigator.clipboard && navigator.clipboard.writeText)
+    return await navigator.clipboard.writeText(text);
+};
 
 chrome.runtime.onMessage.addListener(
-  (message: any, sender: chrome.runtime.MessageSender, sendResponse) => {
+  async(message: any, sender: chrome.runtime.MessageSender, sendResponse) => {
     if (message?.event === "Selection") {
       let inputBoxFound = false;
       console.log(
@@ -19,9 +23,8 @@ chrome.runtime.onMessage.addListener(
       if(inputBox !== null){
         inputBox.value = message?.text ?? "";
         inputBoxFound = true;
-        const newValue = completeValue.slice(0, startPos ?? 0) + message.text + completeValue.slice(endPos ?? 0);
-        inputBox.value = newValue;
-        //inputBox.setRangeText(newValue, startPos ?? 0, endPos ?? 0, 'end');
+        textToUpdate = completeValue.slice(0, startPos ?? 0) + message.text + completeValue.slice(endPos ?? 0);
+        inputBox.value = textToUpdate;
       }
 
       sendResponse({
@@ -30,6 +33,10 @@ chrome.runtime.onMessage.addListener(
         convertedText: message.text,
         message: inputBoxFound ? "converted" : "Error: Input box not found"
       });
+
+      if(inputBox){
+        await copyToClipboard(textToUpdate);
+      }
       
     } else {
       sendResponse({
