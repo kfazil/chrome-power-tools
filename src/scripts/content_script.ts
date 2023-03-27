@@ -1,3 +1,5 @@
+console.log("Hellow from content script");
+
 var inputBox: null | HTMLInputElement;
 var completeValue: string;
 var selectedValue: string;
@@ -12,7 +14,15 @@ const copyToClipboard = async(text: string) => {
 
 chrome.runtime.onMessage.addListener(
   async(message: any, sender: chrome.runtime.MessageSender, sendResponse) => {
-    if (message?.event === "Selection") {
+    const {action, text, feature} = message;
+
+    console.log({
+      action: action,
+      text: text,
+      feature: feature
+    });
+
+    if (action === "Selection") {
       let inputBoxFound = false;
       console.log(
         sender.tab
@@ -21,26 +31,36 @@ chrome.runtime.onMessage.addListener(
       );
 
       if(inputBox !== null){
-        inputBox.value = message?.text ?? "";
+        inputBox.value = text ?? "";
         inputBoxFound = true;
-        textToUpdate = completeValue.slice(0, startPos ?? 0) + message.text + completeValue.slice(endPos ?? 0);
+        textToUpdate = completeValue.slice(0, startPos ?? 0) + text + completeValue.slice(endPos ?? 0);
         inputBox.value = textToUpdate;
       }
 
       sendResponse({
-        event: message?.event,
-        feature: message.feature,
-        convertedText: message.text,
-        message: inputBoxFound ? "converted" : "Error: Input box not found"
+        action: action,
+        feature: feature,
+        convertedText: text,
+        message: inputBoxFound ? "text converted" : "Error: Input box not found"
       });
 
       if(inputBox){
         await copyToClipboard(textToUpdate);
+        sendResponse({
+          action: action,
+          message: "Text copied to clipboard"
+        });
       }
       
+    } else if(action === "copyToClipboard"){
+      await copyToClipboard(text);
+      sendResponse({
+        action: action,
+        message: "Text copied to clipboard"
+      });   
     } else {
       sendResponse({
-        event: message?.event,
+        action: action,
         message: "completed"
       });
     }
@@ -82,7 +102,7 @@ document.addEventListener('mouseup', async(event: MouseEvent) => {
     });
 
     // const response = await chrome.runtime.sendMessage({
-    //   event: "connection-check",
+    //   action: "connection-check",
     //   message: "new-selection"
     // });
     // console.log(response);
